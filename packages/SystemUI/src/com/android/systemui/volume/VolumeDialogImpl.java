@@ -86,6 +86,7 @@ import android.os.SystemClock;
 import android.os.Trace;
 import android.os.UserHandle;
 import android.os.VibrationEffect;
+import static android.view.HapticFeedbackConstants.CLOCK_TICK;
 import android.provider.Settings;
 import android.provider.Settings.Global;
 import android.text.InputFilter;
@@ -3231,6 +3232,11 @@ public class VolumeDialogImpl implements VolumeDialog, Dumpable,
                     Events.writeEvent(Events.EVENT_TOUCH_LEVEL_CHANGED, mRow.stream,
                             userLevel);
                 }
+            }
+            final boolean doVibrate = Settings.System.getInt(mContext.getContentResolver(),
+                    Settings.System.VOLUME_SLIDER_HAPTIC, 0) != 0;
+            if (doVibrate) {
+                seekBar.performHapticFeedback(CLOCK_TICK);
             }
         }
 
