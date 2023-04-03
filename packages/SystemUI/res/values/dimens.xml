@@ -517,7 +517,7 @@
     <dimen name="footer_actions_height">60dp</dimen>
 
     <!-- The size of each of the icon buttons in the QS footer -->
-    <dimen name="qs_footer_action_button_size">48dp</dimen>
+    <dimen name="qs_footer_action_button_size">42dp</dimen>
 
     <dimen name="qs_footer_action_corner_radius">20dp</dimen>
 
@@ -531,7 +531,7 @@
     <dimen name="qs_footer_margin">2dp</dimen>
 
     <!-- Padding on each QS Footer Icon to make the icons 20dpx20dp -->
-    <dimen name="qs_footer_icon_padding">14dp</dimen>
+    <dimen name="qs_footer_icon_padding">12dp</dimen>
     <!-- 3/4 of icon width 20dpx20dp -->
     <dimen name="qs_footer_tuner_icon_translation">15dp</dimen>
 
