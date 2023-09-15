@@ -26,4 +26,7 @@
     <!-- Cycle through ringer modes -->
     <string name="volume_dialog_ringer_guidance_normal">Calls and notifications will ring</string>
 
+    <!-- Smart 5G -->
+    <bool name="config_supportSmart5G">false</bool>
+
 </resources>

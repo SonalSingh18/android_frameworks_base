@@ -97,4 +97,7 @@
     <!-- Cycle through ringer modes -->
     <java-symbol type="string" name="volume_dialog_ringer_guidance_normal" />
 
+    <!-- Smart 5G -->
+    <java-symbol type="bool" name="config_supportSmart5G" />
+
 </resources>
