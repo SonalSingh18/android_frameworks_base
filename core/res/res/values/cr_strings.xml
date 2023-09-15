@@ -33,4 +33,7 @@
 
     <!-- Lock gesture -->
     <string name="gesture_locked_warning">Swipe again to unlock gestures</string>
+
+    <!-- Smart 5G -->
+    <bool name="config_supportSmart5G">false</bool>
 </resources>

@@ -1726,9 +1726,11 @@ public final class SystemServer implements Dumpable {
             mSystemServiceManager.startService(LogcatManagerService.class);
             t.traceEnd();
 
-            t.traceBegin("StartSmart5gService");
-            mSystemServiceManager.startService(Smart5gService.class);
-            t.traceEnd();
+            if (context.getResources().getBoolean(R.bool.config_supportSmart5G)) {
+                t.traceBegin("StartSmart5gService");
+                mSystemServiceManager.startService(Smart5gService.class);
+                t.traceEnd();
+            }
 
         } catch (Throwable e) {
             Slog.e("System", "******************************************");
