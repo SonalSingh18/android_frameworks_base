@@ -254,7 +254,9 @@ public final class PixelPropsUtils {
                 if (SystemProperties.getBoolean(SPOOF_PIXEL_GPHOTOS, true)) {
                     propsToChange.putAll(propsToChangePixelXL);
                 }
-            } else if (packageName.equals("com.netflix.mediaclient") && 
+            } else if (packageName.equals("com.snapchat.android")) {
+                       propsToChange.putAll(propsToChangePixelXL);
+            } else if (packageName.equals("com.netflix.mediaclient") &&
                         !SystemProperties.getBoolean(SPOOF_PIXEL_NETFLIX, false)) {
                     if (DEBUG) Log.d(TAG, "Netflix spoofing disabled by system prop");
                     return;
