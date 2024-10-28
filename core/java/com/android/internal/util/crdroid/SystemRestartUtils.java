@@ -23,6 +23,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.os.AsyncTask;
 import android.os.Handler;
+import android.os.Process;
 import android.os.RemoteException;
 import android.os.ServiceManager;
 
@@ -30,6 +31,8 @@ import com.android.internal.R;
 import com.android.internal.statusbar.IStatusBarService;
 
 import java.lang.ref.WeakReference;
+
+import java.util.List;
 
 public class SystemRestartUtils {
 
@@ -127,11 +130,11 @@ public class SystemRestartUtils {
 
     private static class RestartTask extends AsyncTask<Void, Void, Void> {
         private final WeakReference<Context> mContext;
-        private final String mProcessName;
+        private final String mPackageName;
 
-        RestartTask(Context context, String processName) {
+        RestartTask(Context context, String packageName) {
             mContext = new WeakReference<>(context);
-            mProcessName = processName;
+            mPackageName = packageName;
         }
 
         @Override
@@ -139,17 +142,19 @@ public class SystemRestartUtils {
             try {
                 ActivityManager am = (ActivityManager) mContext.get().getSystemService(Context.ACTIVITY_SERVICE);
                 if (am != null) {
-                    IActivityManager ams = ActivityManager.getService();
-                    for (ActivityManager.RunningAppProcessInfo app : am.getRunningAppProcesses()) {
-                        if (app.processName.contains(mProcessName)) {
-                            ams.killApplicationProcess(app.processName, app.uid);
-                            break;
+                    List<ActivityManager.RunningAppProcessInfo> runningProcesses = am.getRunningAppProcesses();
+                    for (ActivityManager.RunningAppProcessInfo appProcess : runningProcesses) {
+                        if (appProcess.pkgList != null) {
+                            for (String pkg : appProcess.pkgList) {
+                                if (pkg.equals(mPackageName)) {
+                                    Process.killProcess(appProcess.pid);
+                                    return null;
+                                }
+                            }
                         }
                     }
                 }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            } catch (Exception e) {}
             return null;
         }
     }
