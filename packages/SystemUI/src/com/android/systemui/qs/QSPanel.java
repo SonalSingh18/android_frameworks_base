@@ -561,14 +561,14 @@ public class QSPanel extends LinearLayout implements Tunable {
         switchToParent((View) newLayout, parent, index);
         index++;
 
-        if (mBrightnessView != null && !mTop) {
-            switchToParent(mBrightnessView, parent, index);
-            index++;
-        }
-
         if (mFooter != null) {
             // Then the footer with the settings
             switchToParent(mFooter, parent, index);
+            index++;
+        }
+        
+        if (mBrightnessView != null && !mTop) {
+            switchToParent(mBrightnessView, parent, index);
             index++;
         }
     }
