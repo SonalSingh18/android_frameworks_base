@@ -136,6 +136,9 @@ import java.util.Set;
 import java.util.concurrent.Executor;
 
 import javax.inject.Inject;
+import vendor.xiaomi.hardware.fingerprintextension.IXiaomiFingerprint;
+import vendor.xiaomi.hw.touchfeature.ITouchFeature;
+
 
 /**
  * Shows and hides the under-display fingerprint sensor (UDFPS) overlay, handles UDFPS touch events,
@@ -200,6 +203,8 @@ public class UdfpsController implements DozeReceiver, Dumpable {
     @NonNull private final SelectedUserInteractor mSelectedUserInteractor;
     private final boolean mIgnoreRefreshRate;
     private final KeyguardTransitionInteractor mKeyguardTransitionInteractor;
+    private static ITouchFeature xaiomiTouchFeatureAidl = null;
+    private static IXiaomiFingerprint xaiomiFingerprintExtensionAidl = null;
 
     // Currently the UdfpsController supports a single UDFPS sensor. If devices have multiple
     // sensors, this, in addition to a lot of the code here, will be updated.
@@ -284,6 +289,44 @@ public class UdfpsController implements DozeReceiver, Dumpable {
             mScreenOn = false;
         }
     };
+    private static void xaiomiTouchFeature(int arg) {
+        try {
+            if (xaiomiTouchFeatureAidl == null) {
+                var name = "default";
+                var fqName = vendor.xiaomi.hw.touchfeature.ITouchFeature.DESCRIPTOR + "/" + name;
+                var b = android.os.Binder.allowBlocking(android.os.ServiceManager.waitForDeclaredService(fqName));
+                xaiomiTouchFeatureAidl = vendor.xiaomi.hw.touchfeature.ITouchFeature.Stub.asInterface(b);
+                // Link to death
+                b.linkToDeath(() -> {
+                    android.util.Log.w("FP-HAX", "TouchFeature binder died. Reconnecting...");
+                    xaiomiTouchFeatureAidl = null;
+                }, 0);
+                android.util.Log.d("FP-HAX", "Binded TouchFeature");
+            }
+            xaiomiTouchFeatureAidl.setTouchMode(0, 10, arg);
+        } catch(Throwable t) {
+            android.util.Log.e("FP-HAX", "TouchFeature", t);
+        }
+    }
+    private static void xiaomiFingerprintExtension(int arg) {
+        try {
+            if (xaiomiFingerprintExtensionAidl == null) {
+                var name = "default";
+                var fqName = vendor.xiaomi.hardware.fingerprintextension.IXiaomiFingerprint.DESCRIPTOR + "/" + name;
+                var b = android.os.Binder.allowBlocking(android.os.ServiceManager.waitForDeclaredService(fqName));
+                xaiomiFingerprintExtensionAidl = vendor.xiaomi.hardware.fingerprintextension.IXiaomiFingerprint.Stub.asInterface(b);
+                // Link to death
+                b.linkToDeath(() -> {
+                    android.util.Log.w("FP-HAX", "FingerprintExtension binder died. Reconnecting...");
+                    xaiomiFingerprintExtensionAidl = null;
+                }, 0);
+                android.util.Log.d("FP-HAX", "Binded FingerprintExtension");
+            }
+            xaiomiFingerprintExtensionAidl.extCmd(4, arg);
+        } catch(Throwable t) {
+            android.util.Log.e("FP-HAX", "FingerprintExtension", t);
+        }
+   }
 
     private ConfigurationController.ConfigurationListener mConfigurationListener =
             new ConfigurationController.ConfigurationListener() {
@@ -1291,6 +1334,9 @@ public class UdfpsController implements DozeReceiver, Dumpable {
             }
         }
 
+        xaiomiTouchFeature(1);
+        xiaomiFingerprintExtension(1);
+
         if (isOptical()) {
             for (Callback cb : mCallbacks) {
                 cb.onFingerDown();
@@ -1354,6 +1400,8 @@ public class UdfpsController implements DozeReceiver, Dumpable {
             mPowerManagerInternal.setPowerMode(PowerManagerInternal.MODE_LAUNCH, false);
         }
 
+	xaiomiTouchFeature(0);
+        xiaomiFingerprintExtension(0);
     }
 
     public boolean isAnimationEnabled() {
