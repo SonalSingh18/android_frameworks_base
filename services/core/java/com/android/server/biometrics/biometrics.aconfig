@@ -9,10 +9,10 @@ flag {
 }
 
 flag {
-  name: "use_vhal_for_testing"
-  namespace: "biometrics_framework"
-  description: "This flag controls whether virtual HAL is used for testing instead of TestHal "
-  bug: "294254230"
+    name: "de_hidl"
+    namespace: "biometrics_framework"
+    description: "feature flag for biometrics de-hidl"
+    bug: "287332354"
 }
 
 flag {
@@ -20,16 +20,6 @@ flag {
   namespace: "biometrics_framework"
   description: "This flag controls whether a notification should be sent to notify user when loss of enrollment happens"
   bug: "351036558"
-  metadata {
-      purpose: PURPOSE_BUGFIX
-  }
-}
-
-flag {
-  name: "set_ignore_speed_up"
-  namespace: "biometrics_framework"
-  description: "This flag controls whether setIgnoreDisplayTouches is called directly on session from FingerprintProvider"
-  bug: "359289274"
   metadata {
       purpose: PURPOSE_BUGFIX
   }

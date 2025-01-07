@@ -91,7 +91,6 @@ import com.android.systemui.biometrics.udfps.NormalizedTouchData;
 import com.android.systemui.biometrics.udfps.SinglePointerTouchProcessor;
 import com.android.systemui.biometrics.udfps.TouchProcessor;
 import com.android.systemui.biometrics.udfps.TouchProcessorResult;
-import com.android.systemui.biometrics.ui.view.UdfpsTouchOverlay;
 import com.android.systemui.biometrics.ui.viewmodel.DefaultUdfpsTouchOverlayViewModel;
 import com.android.systemui.biometrics.ui.viewmodel.DeviceEntryUdfpsTouchOverlayViewModel;
 import com.android.systemui.bouncer.domain.interactor.AlternateBouncerInteractor;
@@ -1073,9 +1072,8 @@ public class UdfpsController implements DozeReceiver, Dumpable {
             return;
         }
         if (DeviceEntryUdfpsRefactor.isEnabled()) {
-            UdfpsTouchOverlay udfpsView = (UdfpsTouchOverlay) view;
-            if (udfpsView.isDisplayConfigured()) {
-                udfpsView.unconfigureDisplay();
+            if (mUdfpsDisplayMode != null) {
+                mUdfpsDisplayMode.disable(null);
             }
         } else {
             if (view != null) {
@@ -1286,7 +1284,7 @@ public class UdfpsController implements DozeReceiver, Dumpable {
                 dispatchOnUiReady(requestId);
             } else {
                 if (DeviceEntryUdfpsRefactor.isEnabled()) {
-                    ((UdfpsTouchOverlay) view).configureDisplay(() -> dispatchOnUiReady(requestId));
+                    mUdfpsDisplayMode.enable(() -> dispatchOnUiReady(requestId));
                 } else {
                     ((UdfpsView) view).configureDisplay(() -> dispatchOnUiReady(requestId));
                 }

@@ -17,8 +17,6 @@
 package com.android.server.biometrics.sensors.fingerprint.aidl;
 
 import static android.hardware.fingerprint.FingerprintManager.SENSOR_ID_ANY;
-import static android.hardware.fingerprint.FingerprintSensorConfigurations.getIFingerprint;
-import static android.hardware.fingerprint.FingerprintSensorConfigurations.remapFqName;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -38,7 +36,6 @@ import android.hardware.biometrics.SensorLocationInternal;
 import android.hardware.biometrics.fingerprint.IFingerprint;
 import android.hardware.biometrics.fingerprint.PointerContext;
 import android.hardware.biometrics.fingerprint.SensorProps;
-import android.hardware.biometrics.fingerprint.virtualhal.IVirtualHal;
 import android.hardware.fingerprint.Fingerprint;
 import android.hardware.fingerprint.FingerprintAuthenticateOptions;
 import android.hardware.fingerprint.FingerprintEnrollOptions;
@@ -62,7 +59,6 @@ import com.android.server.biometrics.AuthenticationStatsBroadcastReceiver;
 import com.android.server.biometrics.AuthenticationStatsCollector;
 import com.android.server.biometrics.BiometricDanglingReceiver;
 import com.android.server.biometrics.BiometricHandlerProvider;
-import com.android.server.biometrics.Flags;
 import com.android.server.biometrics.Utils;
 import com.android.server.biometrics.log.BiometricContext;
 import com.android.server.biometrics.log.BiometricLogger;
@@ -134,8 +130,6 @@ public class FingerprintProvider implements IBinder.DeathRecipient, ServiceProvi
     @Nullable private IUdfpsOverlayController mUdfpsOverlayController;
     private final AuthSessionCoordinator mAuthSessionCoordinator;
     @Nullable private AuthenticationStatsCollector mAuthenticationStatsCollector;
-    @Nullable private IVirtualHal mVhal;
-    @Nullable private String mHalInstanceNameCurrent;
 
     private boolean mCleanup;
 
@@ -298,8 +292,7 @@ public class FingerprintProvider implements IBinder.DeathRecipient, ServiceProvi
         if (mTestHalEnabled) {
             return true;
         }
-        return (ServiceManager.checkService(
-                remapFqName(IFingerprint.DESCRIPTOR + "/" + mHalInstanceName))
+        return (ServiceManager.checkService(IFingerprint.DESCRIPTOR + "/" + mHalInstanceName)
                 != null);
     }
 
@@ -307,29 +300,10 @@ public class FingerprintProvider implements IBinder.DeathRecipient, ServiceProvi
     @VisibleForTesting
     synchronized IFingerprint getHalInstance() {
         if (mTestHalEnabled) {
-            if (Flags.useVhalForTesting()) {
-                if (!mHalInstanceNameCurrent.contains("virtual")) {
-                    Slog.i(getTag(), "Switching fingerprint hal from " + mHalInstanceName
-                            + " to virtual hal");
-                    mHalInstanceNameCurrent = "virtual";
-                    mDaemon = null;
-                }
-            } else {
-                // Enabling the test HAL for a single sensor in a multi-sensor HAL currently enables
-                // the test HAL for all sensors under that HAL. This can be updated in the future if
-                // necessary.
-                return new TestHal();
-            }
-        } else {
-            if (mHalInstanceNameCurrent == null) {
-                mHalInstanceNameCurrent = mHalInstanceName;
-            } else if (mHalInstanceNameCurrent.contains("virtual")
-                    && mHalInstanceNameCurrent != mHalInstanceName) {
-                Slog.i(getTag(), "Switching fingerprint from virtual hal " + "to "
-                        + mHalInstanceName);
-                mHalInstanceNameCurrent = mHalInstanceName;
-                mDaemon = null;
-            }
+            // Enabling the test HAL for a single sensor in a multi-sensor HAL currently enables
+            // the test HAL for all sensors under that HAL. This can be updated in the future if
+            // necessary.
+            return new TestHal();
         }
 
         if (mDaemon != null) {
@@ -338,7 +312,10 @@ public class FingerprintProvider implements IBinder.DeathRecipient, ServiceProvi
 
         Slog.d(getTag(), "Daemon was null, reconnecting");
 
-        mDaemon = getIFingerprint(IFingerprint.DESCRIPTOR + "/" + mHalInstanceNameCurrent);
+        mDaemon = IFingerprint.Stub.asInterface(
+                Binder.allowBlocking(
+                        ServiceManager.waitForDeclaredService(
+                                IFingerprint.DESCRIPTOR + "/" + mHalInstanceName)));
         if (mDaemon == null) {
             Slog.e(getTag(), "Unable to get daemon");
             return null;
@@ -799,17 +776,7 @@ public class FingerprintProvider implements IBinder.DeathRecipient, ServiceProvi
 
     @Override
     public void setIgnoreDisplayTouches(long requestId, int sensorId, boolean ignoreTouches) {
-        if (Flags.setIgnoreSpeedUp()) {
-            try {
-                mFingerprintSensors.get(
-                        sensorId).getLazySession().get().getSession().setIgnoreDisplayTouches(
-                        ignoreTouches);
-                Slog.d(getTag(), "setIgnoreDisplayTouches set to " + ignoreTouches);
-            } catch (Exception e) {
-                Slog.w(getTag(), "setIgnore failed", e);
-            }
-        } else {
-            mFingerprintSensors.get(sensorId).getScheduler().getCurrentClientIfMatches(
+        mFingerprintSensors.get(sensorId).getScheduler().getCurrentClientIfMatches(
                 requestId, (client) -> {
                     if (!(client instanceof Udfps)) {
                         Slog.e(getTag(),
@@ -818,7 +785,6 @@ public class FingerprintProvider implements IBinder.DeathRecipient, ServiceProvi
                     }
                     ((Udfps) client).setIgnoreDisplayTouches(ignoreTouches);
                 });
-        }
     }
 
     @Override
@@ -922,13 +888,7 @@ public class FingerprintProvider implements IBinder.DeathRecipient, ServiceProvi
     }
 
     void setTestHalEnabled(boolean enabled) {
-        final boolean changed = enabled != mTestHalEnabled;
         mTestHalEnabled = enabled;
-        Slog.i(getTag(), "setTestHalEnabled(): useVhalForTestingFlags=" + Flags.useVhalForTesting()
-                + " mTestHalEnabled=" + mTestHalEnabled + " changed=" + changed);
-        if (changed && useVhalForTesting()) {
-            getHalInstance();
-        }
     }
 
     public boolean getTestHalEnabled() {
@@ -1010,28 +970,5 @@ public class FingerprintProvider implements IBinder.DeathRecipient, ServiceProvi
      */
     public void sendFingerprintReEnrollNotification() {
         mAuthenticationStatsCollector.sendFingerprintReEnrollNotification();
-    }
-
-    /**
-     * Return virtual hal AIDL interface if it is used for testing
-     *
-     */
-    public IVirtualHal getVhal() throws RemoteException {
-        if (mVhal == null && useVhalForTesting()) {
-            mVhal = IVirtualHal.Stub.asInterface(
-                    Binder.allowBlocking(
-                            ServiceManager.waitForService(
-                                    IVirtualHal.DESCRIPTOR + "/"
-                                            + mHalInstanceNameCurrent)));
-            Slog.d(getTag(), "getVhal " + mHalInstanceNameCurrent);
-        }
-        return mVhal;
-    }
-
-    /**
-     * Return true if vhal_for_testing feature is enabled and test is active
-     */
-    public boolean useVhalForTesting() {
-        return (Flags.useVhalForTesting() && mTestHalEnabled);
     }
 }
