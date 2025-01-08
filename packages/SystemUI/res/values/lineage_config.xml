@@ -15,9 +15,6 @@
      limitations under the License.
 -->
 <resources>
-    <!-- Color of the UDFPS pressed view -->
-    <color name="config_udfpsColor">#ffffffff</color>
-
     <!-- Whether to enable framework dimming for UDFPS -->
     <bool name="config_udfpsFrameworkDimming">false</bool>
 

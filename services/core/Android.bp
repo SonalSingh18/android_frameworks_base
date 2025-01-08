@@ -250,6 +250,8 @@ java_library_static {
         "android.adpf.sessionmanager_aidl-java",
         "uprobestats_flags_java_lib",
         "vendor.aospa.biometrics.face",
+        "vendor.xiaomi.hardware.fingerprintextension-V1-java",
+        "vendor.xiaomi.hw.touchfeature-V1-java",
     ],
     javac_shard_size: 50,
     javacflags: [
