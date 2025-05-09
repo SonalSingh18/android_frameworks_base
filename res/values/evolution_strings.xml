@@ -853,4 +853,11 @@
     <!-- Interface / Expressive Design -->
     <string name="expressive_design_title">Expressive Design</string>
     <string name="expressive_design_summary">Enable Expressive Design preview</string>
+
+    <!-- Statusbar Padding -->
+    <string name="statusbar_extra_padding_category">Extra padding</string>
+    <string name="statusbar_extra_padding_start_title">Start padding</string>
+    <string name="statusbar_extra_padding_top_title">Top padding</string>
+    <string name="statusbar_extra_padding_end_title">End padding</string>
+
 </resources>

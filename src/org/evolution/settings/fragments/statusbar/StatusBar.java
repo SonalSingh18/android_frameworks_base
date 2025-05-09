@@ -79,6 +79,13 @@ public class StatusBar extends SettingsPreferenceFragment implements
         final PreferenceScreen prefScreen = getPreferenceScreen();
         final Resources resources = context.getResources();
 
+        Settings.System.putIntForUser(resolver,
+                Settings.System.STATUSBAR_EXTRA_PADDING_START, 0, UserHandle.USER_CURRENT);
+        Settings.System.putIntForUser(resolver,
+                Settings.System.STATUSBAR_EXTRA_PADDING_TOP, 6, UserHandle.USER_CURRENT);
+        Settings.System.putIntForUser(resolver,
+                Settings.System.STATUSBAR_EXTRA_PADDING_END, 0, UserHandle.USER_CURRENT);
+
         mQuickPulldown =
                 (LineageSystemSettingListPreference) findPreference(KEY_QUICK_PULLDOWN);
         mQuickPulldown.setOnPreferenceChangeListener(this);
