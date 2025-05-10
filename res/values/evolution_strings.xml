@@ -860,4 +860,8 @@
     <string name="statusbar_extra_padding_top_title">Top padding</string>
     <string name="statusbar_extra_padding_end_title">End padding</string>
 
+    <!-- Cache cleaner -->
+    <string name="cache_cleaner_title">Cache Cleaner</string>
+    <string name="cache_cleaner_summary">Enable the cache cleaner service to automatically clear app caches</string>
+
 </resources>
