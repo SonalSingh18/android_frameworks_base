@@ -20,7 +20,7 @@ import android.content.Context
 import android.os.Build
 
 object SettingsThemeHelper {
-    private const val IS_EXPRESSIVE_DESIGN_ENABLED = "is_expressive_design_enabled"
+    private const val IS_EXPRESSIVE_DESIGN_ENABLED = "persist.sys.is_expressive_design_enabled"
     private var expressiveThemeState: ExpressiveThemeState = ExpressiveThemeState.UNKNOWN
 
     enum class ExpressiveThemeState {

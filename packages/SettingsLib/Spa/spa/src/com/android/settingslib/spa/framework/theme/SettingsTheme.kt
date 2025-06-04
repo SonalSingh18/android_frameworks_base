@@ -43,4 +43,4 @@ fun SettingsTheme(content: @Composable () -> Unit) {
 }
 
 val isSpaExpressiveEnabled
-    by lazy { SystemProperties.getBoolean("is_expressive_design_enabled", false) }
+    by lazy { SystemProperties.getBoolean("persist.sys.is_expressive_design_enabled", false) }
