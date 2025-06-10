@@ -897,19 +897,19 @@ public class ApplicationPackageManager extends PackageManager {
     @Override
     public boolean hasSystemFeature(String name, int version) {
         String packageName = ActivityThread.currentPackageName();
+        boolean isGPhotosSpoofEnabled = SystemProperties.getBoolean("persist.sys.pixelprops.gphotos", true);
         if (packageName != null
                 && (packageName.equals("com.google.android.googlequicksearchbox")
                 || packageName.equals("com.google.android.apps.pixel.agent")
                 || packageName.equals("com.google.android.apps.pixel.creativeassistant")
                 || packageName.equals("com.google.android.dialer")
                 || (packageName.equals("com.google.android.apps.photos")
-                && !SystemProperties.getBoolean("persist.sys.gphooks.enable", false)))) {
+                && !isGPhotosSpoofEnabled))) {
             if (Arrays.asList(featuresPixel).contains(name)) return true;
             if (Arrays.asList(featuresPixelOthers).contains(name)) return true;
             if (Arrays.asList(featuresTensor).contains(name)) return true;
             if (Arrays.asList(featuresNexus).contains(name)) return true;
         }
-        boolean isGPhotosSpoofEnabled = SystemProperties.getBoolean("persist.sys.gphooks.enable", false);
         if (packageName != null
                 && packageName.equals("com.google.android.apps.photos") && isGPhotosSpoofEnabled) {
             if (Arrays.asList(featuresPixel).contains(name)) return false;
